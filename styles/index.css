@@ -833,3 +833,38 @@ section#profiles p.rename-error {
 		background-color: rgba(240,240,240,.95);
 	}
 }
+
+/* Collapsible Extensions bar */
+section#content h1.section-toggle {
+	cursor: pointer;
+}
+
+section#content h1.section-toggle:hover {
+	filter: brightness(1.08);
+}
+
+section#content h1.section-toggle .section-meta {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	font-weight: normal;
+}
+
+section#content h1.section-toggle .count {
+	font-size: .85em;
+	min-width: 16px;
+	padding: 0 6px;
+	text-align: center;
+	border-radius: 8px;
+	text-shadow: none;
+	background-color: rgba(255,255,255,.22);
+}
+
+section#content h1.section-toggle i.fa {
+	font-size: .85em;
+	transition: transform .15s ease;
+}
+
+section#content h1.section-toggle.open i.fa {
+	transform: rotate(180deg);
+}

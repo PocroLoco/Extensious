@@ -288,6 +288,16 @@ document.addEventListener("DOMContentLoaded", function() {
     // Extensious: which profiles have their extension list open (remembered).
     self.expandedProfiles = ko.observableArray().extend({persistable: "expandedProfiles"});
 
+    // Extensious: the Extensions list can be collapsed from its purple bar.
+    // Closed by default (remembered once you change it); always shows while searching.
+    self.showExtensions = ko.observable(false).extend({persistable: "showExtensions"});
+    self.toggleExtensionsList = function() {
+      self.showExtensions(!self.showExtensions());
+    };
+    self.extensionsOpen = ko.pureComputed(function() {
+      return self.showExtensions() || !!self.search.q();
+    });
+
     self.toggleExpanded = function(p) {
       if(_(self.expandedProfiles()).contains(p.name())) {
         self.expandedProfiles.remove(p.name());
