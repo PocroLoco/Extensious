@@ -14,7 +14,7 @@
 <script type="text/javascript" src="js/dragdrop.js"></script>
 <script type="text/javascript" src="js/index.js"></script>
 </head>
-<body data-sbind="css: {modalopen: newProfile.isOpen}">
+<body data-sbind="css: {modalopen: anyModalOpen}">
 <section id="header" class="main" data-sbind="if: opts.showHeader">
 	<h1>
 		<a id="title" href="https://chrome.google.com/webstore/detail/jjmflmamggggndanpgfnpelongoepncg" target="_blank"><img src="images/icon48.png" width="16px" height="16px" />&nbsp;Extensious</a>
@@ -44,11 +44,14 @@
 
 	<!-- Profiles -->
 	<section id="profiles" data-sbind="visible: !search.q">
-		<h1 class="has-action">Profiles
-			<a href="#" class="add-profile" title="New profile" data-sbind="click: newProfile.open"><i class="fa fa-plus"></i></a>
+		<h1 class="has-action section-toggle" title="Show/hide" data-sbind="click: toggleProfilesList, css: {open: profilesOpen}">Profiles
+			<span class="section-meta">
+				<span class="count" data-sbind="text: listedProfiles.count"></span><i class="fa fa-chevron-down"></i>
+				<a href="#" class="add-profile" title="New profile" data-sbind="click: newProfile.open, clickBubble: false"><i class="fa fa-plus"></i></a>
+			</span>
 		</h1>
-		<p class="no-profiles" data-sbind="visible: listedProfiles.none">No profiles yet. Hit <i class="fa fa-plus"></i> to make one.</p>
-		<ul data-sbind="foreach: listedProfiles">
+		<p class="no-profiles" data-sbind="visible: profilesOpen() && listedProfiles.none()">No profiles yet. Hit <i class="fa fa-plus"></i> to make one.</p>
+		<ul data-sbind="visible: profilesOpen, foreach: listedProfiles">
 			<li class="app profile" data-sbind="click: $parent.toggleProfile, css: {on: active}">
 				<div class="profile-row">
 					<i class="fa fa-check" alt="active" data-sbind="visible: active"></i>
@@ -60,6 +63,7 @@
 					<span class="name-wrap">
 						<span class="profile-name" data-sbind="text: short_name"></span>
 						<a href="#" class="profile-edit" title="Rename" data-sbind="visible: !reserved(), click: $parent.startRename, clickBubble: false"><i class="fa fa-pencil"></i></a>
+						<a href="#" class="profile-delete" title="Delete" data-sbind="visible: !reserved(), click: $parent.askDelete, clickBubble: false"><i class="fa fa-trash-o"></i></a>
 					</span>
 					<!-- /ko -->
 					<!-- ko if: editing -->
@@ -149,6 +153,22 @@
 			<button type="submit" class="btn primary">Create</button>
 		</div>
 	</form>
+</div>
+<!-- /ko -->
+
+<!-- Extensious: "Are you sure?" before deleting a profile -->
+<!-- ko if: deleteTarget -->
+<div class="modal-layer">
+	<div class="modal-backdrop" data-sbind="click: cancelDelete"></div>
+	<div class="modal confirm" role="alertdialog">
+		<div class="confirm-icon"><i class="fa fa-trash-o"></i></div>
+		<h2>Delete this profile?</h2>
+		<p class="confirm-text">&ldquo;<strong data-sbind="text: deleteName"></strong>&rdquo; will be deleted. Your extensions stay installed, and nothing gets turned on or off.</p>
+		<div class="modal-actions">
+			<button type="button" class="btn ghost" data-sbind="click: cancelDelete, hasFocus: focusCancel">Cancel</button>
+			<button type="button" class="btn danger" data-sbind="click: confirmDelete">Delete</button>
+		</div>
+	</div>
 </div>
 <!-- /ko -->
 

@@ -188,6 +188,7 @@ document.addEventListener("DOMContentLoaded", function() {
       root.profiles.save(function() {});
       // Show the new profile opened so you can see what's in it.
       if(!_(root.expandedProfiles()).contains(n)) root.expandedProfiles.push(n);
+      root.hideProfiles(false);
       var draft = currentDraft();
       self.close();
 
@@ -287,6 +288,15 @@ document.addEventListener("DOMContentLoaded", function() {
 
     // Extensious: which profiles have their extension list open (remembered).
     self.expandedProfiles = ko.observableArray().extend({persistable: "expandedProfiles"});
+
+    // Extensious: the Profiles list can be collapsed from its purple bar (open by default).
+    self.hideProfiles = ko.observable(false).extend({persistable: "hideProfiles"});
+    self.toggleProfilesList = function() {
+      self.hideProfiles(!self.hideProfiles());
+    };
+    self.profilesOpen = ko.pureComputed(function() {
+      return !self.hideProfiles();
+    });
 
     // Extensious: the Extensions list can be collapsed from its purple bar.
     // Closed by default (remembered once you change it); always shows while searching.
@@ -435,6 +445,13 @@ document.addEventListener("DOMContentLoaded", function() {
           var input = document.querySelector("input.rename-input");
           if(input) input.setSelectionRange(d.text.length, d.text.length);
           return true;
+        case "undelete":
+          if(self.profiles.exists(d.name)) return false;
+          self.profiles.add(d.name, (d.items || []).slice());
+          self.sortProfiles();
+          if(d.wasActive && !self.isActive(d.name)) self.activeProfiles.push(d.name);
+          if(d.wasExpanded && !_(self.expandedProfiles()).contains(d.name)) self.expandedProfiles.push(d.name);
+          return true;
         case "unadd":
           p = self.profiles.find(d.profile);
           if(!p) return false;
@@ -479,13 +496,61 @@ document.addEventListener("DOMContentLoaded", function() {
       var inField = t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA");
       // Inside a text box you're typing in, Cmd+Z undoes your typing like normal.
       if(inField && (t.value || (t.closest && t.closest(".modal, .profile-row")))) return;
-      if(self.newProfile.isOpen()) return;
+      if(self.newProfile.isOpen() || self.deleteTarget()) return;
       e.preventDefault();
       self.undo();
     });
 
     // Extensious: "+" on the Profiles bar opens this small create-profile dialog.
     self.newProfile = new NewProfileViewModel(self);
+
+    // Extensious: trash icon next to a profile's name, with an "Are you sure?" first.
+    self.deleteTarget = ko.observable(null);
+    self.focusCancel = ko.observable(false);
+    self.deleteName = ko.pureComputed(function() {
+      var p = self.deleteTarget();
+      return p ? p.short_name() : "";
+    });
+
+    self.askDelete = function(p) {
+      self.deleteTarget(p);
+      self.focusCancel(true);
+    };
+
+    self.cancelDelete = function() {
+      self.deleteTarget(null);
+    };
+
+    // Deleting only removes the profile. Extensions stay exactly as they are.
+    self.confirmDelete = function() {
+      var p = self.deleteTarget();
+      if(!p) return;
+      var name = p.name();
+      var saved = {
+        name: name,
+        items: p.items().slice(),
+        wasActive: self.isActive(name),
+        wasExpanded: _(self.expandedProfiles()).contains(name)
+      };
+      self.profiles.remove(p);
+      self.activeProfiles.remove(name);
+      self.expandedProfiles.remove(name);
+      self.profiles.save(function() {});
+      self.deleteTarget(null);
+      self.setUndo({ label: "deleting " + name, type: "undelete", data: saved });
+      self.toast("Deleted " + name + ". Press " + self.undoKey + " to undo.");
+    };
+
+    document.addEventListener("keydown", function(e) {
+      if(e.key === "Escape" && self.deleteTarget()) {
+        e.preventDefault();
+        self.cancelDelete();
+      }
+    });
+
+    self.anyModalOpen = ko.pureComputed(function() {
+      return self.newProfile.isOpen() || !!self.deleteTarget();
+    });
 
     self.emptyItems = ko.pureComputed(function() {
       return self.listedApps.none() && self.listedExtensions.none();

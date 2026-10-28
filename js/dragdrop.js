@@ -135,7 +135,7 @@ var setupProfileDragAndDrop = function(vm) {
   };
 
   document.addEventListener("pointerdown", function(e) {
-    if(e.button !== 0 || vm.newProfile.isOpen()) return;
+    if(e.button !== 0 || vm.anyModalOpen()) return;
     if(e.target.closest(".fa-gear, a")) return; // options gear, links, arrows
     var sub = e.target.closest("ul.profile-items > li");
     var item = sub || e.target.closest("li.extension");
