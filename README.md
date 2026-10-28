@@ -15,6 +15,10 @@ A fork of [Extensity](https://github.com/sergiokas/Extensity) by Sergio Kaszczys
 
 To install: download/clone this repo, open `chrome://extensions`, turn on **Developer mode**, click **Load unpacked**, and pick this folder.
 
+**More extensions by me:**
+- [Gas Money](https://github.com/PocroLoco/Gas-Money): see what a Google Maps drive costs you in gas, right under each route.
+- [Unit Price Tags](https://github.com/PocroLoco/Unit-Price-Tags): price per ounce, pound or item on grocery sites, plus sort by unit price.
+
 Original Extensity README below.
 
 ---
